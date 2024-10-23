@@ -1,39 +1,108 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# EntoAny
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+**EntoAny** is a Flutter package for easy text transliteration. It allows users to input text and receive transliterated suggestions based on their preferred language.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- **Text Input**: Users can enter text into the input field.
+- **Transliteration Suggestions**: The package fetches transliteration suggestions based on user input.
+- **Preferred Language Selection**: Easily set the preferred language for transliteration.
+- **Customizable UI**: The widget can be customized with hints and labels.
 
-## Getting started
+## Installation
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+Add the following dependency to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  ento_any: ^1.0.0 # Replace with the latest version
+```
+
+Then run:
+
+```bash
+flutter pub get
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+Here’s a simple example of how to use the `EntoAny` widget in your Flutter application:
 
 ```dart
-const like = 'sample';
+import 'package:flutter/material.dart';
+import 'package:ento_any/ento_any.dart'; // Adjust the import based on your package location
+
+class CheckIntoAny extends StatefulWidget {
+  const CheckIntoAny({super.key});
+
+  @override
+  State<CheckIntoAny> createState() => _CheckIntoAnyState();
+}
+
+class _CheckIntoAnyState extends State<CheckIntoAny> {
+  TextEditingController textController = TextEditingController();
+
+  @override
+  void dispose() {
+    textController.dispose(); // Dispose the controller when done
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Transliterator Example'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Center(
+              child: EntoAny(
+                preferredLanguage: 'ne', // Set the preferred language (e.g., Nepali)
+                hintText: 'Enter text to transliterate',
+                labelText: 'Text',
+                controller: textController,
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Display the selected text
+            Text(
+              'Selected Text: ${textController.text}', // Show the selected text
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Send the text to the server
+                print(textController.text);
+              },
+              child: Text("Send"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 ```
 
-## Additional information
+### Parameters
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+- `preferredLanguage`: Specify the preferred language for transliteration (e.g., `'ne'` for Nepali).
+- `hintText`: The placeholder text displayed in the input field.
+- `labelText`: The label for the input field.
+- `controller`: A `TextEditingController` to manage the text input.
+
+## Contribution
+
+Contributions are welcome! Please feel free to submit issues or pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+Feel free to customize this README further based on your needs or specific features of your package!

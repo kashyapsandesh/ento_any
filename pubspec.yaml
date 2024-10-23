@@ -1,7 +1,7 @@
 name: ento_any
 description: "A new Flutter package project."
 version: 0.0.1
-# homepage:
+homepage: https://github.com/kashyapsandesh/ento_any
 environment:
   sdk: ">=3.3.3 <4.0.0"
   flutter: ">=1.17.0"
@@ -10,7 +10,6 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^1.2.2
-  
 
 dev_dependencies:
   flutter_lints: ^3.0.0
