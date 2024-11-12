@@ -1,13 +1,11 @@
-library ento_any_dropdown;
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class EntoAny extends StatefulWidget {
-  final TextEditingController controller; // Add this line
-  final String hintText; // For hint text
-  final String labelText; // For label text
+  final TextEditingController controller;
+  final String hintText;
+  final String labelText;
   final String preferredLanguage;
 
   const EntoAny({
@@ -24,72 +22,43 @@ class EntoAny extends StatefulWidget {
 
 class _EntoAnyState extends State<EntoAny> {
   List<String> suggestions = [];
-  bool isLoading = false;
-  bool userSelected = false; // Flag to track user selection
+  // bool isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    // Listen to text changes
-    widget.controller.addListener(() {
-      if (!userSelected) {
-        getSuggestions();
-      }
-      userSelected = false; // Reset the flag
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  Future<void> getSuggestions() async {
-    if (widget.controller.text.trim().isEmpty) {
+  // Fetch suggestions when the text field value changes
+  Future<void> getSuggestions(String query) async {
+    if (query.trim().isEmpty) {
       setState(() {
-        suggestions = [];
+        suggestions = []; // Clear suggestions if input is empty
       });
       return;
     }
 
     setState(() {
-      isLoading = true;
+      // isLoading = true; // Show the loading indicator
     });
 
     try {
       final response = await http.get(
         Uri.parse(
-          'https://google.com/inputtools/request?text=${widget.controller.text}&ime=transliteration_en_${widget.preferredLanguage}&num=4&cp=0&cs=1&ie=utf-8&oe=utf-8&a',
+          'https://google.com/inputtools/request?text=$query&ime=transliteration_en_${widget.preferredLanguage}&num=4&cp=0&cs=1&ie=utf-8&oe=utf-8&a',
         ),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data[0] == 'SUCCESS') {
-          if (mounted) {
-            setState(() {
-              suggestions = List<String>.from(data[1][0][1]);
-            });
-          }
+          setState(() {
+            suggestions = List<String>.from(data[1][0][1]);
+          });
         }
       }
     } catch (e) {
       debugPrint('Error: $e');
     } finally {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
+      setState(() {
+        // isLoading = false; // Hide the loading indicator once the data is fetched
+      });
     }
-  }
-
-  void selectSuggestion(String suggestion) {
-    userSelected = true; // Mark that the user made a selection
-    setState(() {
-      widget.controller.text = suggestion; // Update text controller
-      suggestions = []; // Clear suggestions
-    });
   }
 
   @override
@@ -97,45 +66,51 @@ class _EntoAnyState extends State<EntoAny> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TextField(
-          controller: widget.controller,
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            hintText: widget.hintText, // Use hint text
-            labelText: widget.labelText, // Use label text
-          ),
+        // Autocomplete widget for user input
+        Autocomplete<String>(
+          optionsBuilder: (TextEditingValue textEditingValue) {
+            if (textEditingValue.text.isEmpty) {
+              return const Iterable<String>.empty();
+            }
+            // Fetch suggestions based on the user's input
+            getSuggestions(textEditingValue.text);
+            return suggestions;
+          },
+          onSelected: (String selection) {
+            // Set the selected suggestion to the TextField
+            widget.controller.text = selection;
+
+            // After a selection, clear suggestions and stop the loading indicator
+            setState(() {
+              suggestions = [];
+              // isLoading = false;
+            });
+
+            // Disable focus (dismiss keyboard)
+            FocusScope.of(context).unfocus();
+          },
+          fieldViewBuilder: (BuildContext context,
+              TextEditingController fieldTextEditingController,
+              FocusNode fieldFocusNode,
+              VoidCallback onFieldSubmitted) {
+            return TextField(
+              controller: fieldTextEditingController,
+              focusNode: fieldFocusNode,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                hintText: widget.hintText,
+                labelText: widget.labelText,
+              ),
+            );
+          },
         ),
-        if (isLoading)
-          const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Center(child: CircularProgressIndicator()),
-          ),
-        if (suggestions.isNotEmpty)
-          Container(
-            margin: const EdgeInsets.only(top: 10),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Column(
-              children: suggestions.map((suggestion) {
-                return InkWell(
-                  onTap: () => selectSuggestion(suggestion),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    child: Text(
-                      suggestion,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
+
+        // // Loading indicator while fetching suggestions
+        // if (isLoading)
+        //   const Padding(
+        //     padding: EdgeInsets.all(8.0),
+        //     child: Center(child: CircularProgressIndicator()),
+        //   ),
       ],
     );
   }

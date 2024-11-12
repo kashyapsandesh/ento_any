@@ -1,6 +1,6 @@
 name: ento_any
 description: "A Flutter package that provides a simple transliterator with language selection capabilities, enabling users to convert text easily with suggestions from an API."
-version: 0.0.1
+version: 0.0.2+3
 homepage: https://github.com/kashyapsandesh/ento_any
 environment:
   sdk: ">=3.3.3 <4.0.0"
